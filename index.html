@@ -255,6 +255,7 @@ main{position:relative;z-index:1}
  .al-slot.active .al-switch::after{left:13px}
  .al-slot.empty{opacity:.38;cursor:default}
  .alarm-layout>.drums{margin:0;min-width:0}
+ .al-save{width:100%;min-height:48px}
  @media(max-width:360px){.alarm-layout{grid-template-columns:96px minmax(0,1fr);gap:6px}.alarm-layout .drums{gap:5px}.alarm-layout .drum{width:min(76px,23vw)}}
 .over{position:fixed;inset:0;z-index:20;background:rgba(3,4,10,.78);display:flex;align-items:center;justify-content:center;padding:20px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 
@@ -894,8 +895,7 @@ function renderAlarm(){
   const r = S.al.run;
   $("#alBox").innerHTML = '<h2>Alarme</h2><div class="alarm-layout">' + alarmMemoryHTML() + drumsHTML("al", r) + '</div>' +
     '<p class="tstat" id="alStat">' + alStatus() + '</p>' +
-    '<div class="tctl"><button class="pri" type="button" data-act="alStart"' + (r ? " disabled" : "") + '>Activer</button>' +
-    '<button class="danger" type="button" data-act="alStop"' + (r ? "" : " disabled") + '>Arrêter</button></div>';
+    '<div class="tctl"><button class="pri al-save" type="button" data-act="alStart"' + (r ? " disabled" : "") + '>Enregistrer</button></div>';
   drumsInit("al", drumVals("al"));
 }
 function tmStart(sec){
@@ -913,6 +913,8 @@ function alStart(h, m){
   if (h == null) { readDrums("al"); h = S.al.set.h; m = S.al.set.m; }
   S.al.run = { h, m, at: nextAt(h, m) }; save("alRun", S.al.run);
   S.al.hist = [{ h, m }].concat(S.al.hist.filter(x => x.h !== h || x.m !== m)).slice(0, 4); save("alHist", S.al.hist);
+  const memKey = hhmm(h, m), activeMemories = load("alMemOn") || [];
+  if (!activeMemories.includes(memKey)) save("alMemOn", activeMemories.concat(memKey));
   renderAlarm(); keepAwake(); bgAudio();
 }
 function alStop(fromRing){ S.al.run = null; del("alRun"); renderAlarm(); keepAwake(); if (!fromRing) bgAudio(); }
